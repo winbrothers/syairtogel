@@ -1,3 +1,26 @@
+// ===== KONFIGURASI FIREBASE =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDblMWPch2oL1YulaG4HQcD7RMnYEMgtYo",
+  authDomain: "kadal-z.firebaseapp.com",
+  databaseURL: "https://kadal-z-default-rtdb.firebaseio.com",
+  projectId: "kadal-z",
+  storageBucket: "kadal-z.firebasestorage.app",
+  messagingSenderId: "953692984749",
+  appId: "1:953692984749:web:77f355795c07764dcd7d24",
+  measurementId: "G-D6BGKYY6LS"
+};
+
+let db = null;
+try {
+    if (firebaseConfig.apiKey !== "ISI_API_KEY_ANDA" && typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    }
+} catch (error) {
+    console.error("Firebase init failed:", error);
+}
+// ================================
+
 const SHIO_DATA = [
     { name: "SHIO KERBAU", url: "shio/kerbau_v3.png" },
     { name: "SHIO KUDA", url: "shio/kuda_v3.png" },
@@ -153,7 +176,6 @@ function saveLayout() {
         const select = document.getElementById('market-select');
         const card = document.getElementById('lottery-card');
         const zoomInput = document.getElementById('bg-zoom-input');
-        const brightInput = document.getElementById('bg-brightness-input');
         
         if (!select || !card) return;
 
@@ -177,28 +199,27 @@ function saveLayout() {
                 html: target.innerHTML 
             };
         });
+        
+        // Simpan ke LocalStorage sebagai backup/sementara
         localStorage.setItem('lottery_layout_v3_1', JSON.stringify(layout));
+        
+        // Simpan ke Firebase secara otomatis
+        if (db) {
+            db.ref('layouts/default').set(layout).catch(e => console.error("Firebase save error:", e));
+        }
     } catch (e) {
         console.warn("Storage error:", e);
     }
 }
 
-function loadLayout() {
-    let saved = localStorage.getItem('lottery_layout_v3_1');
-    if (!saved && typeof DEFAULT_LAYOUT !== 'undefined' && DEFAULT_LAYOUT !== null) {
-        saved = JSON.stringify(DEFAULT_LAYOUT);
-    }
-    if (!saved) return;
+function applyLayoutData(layout) {
+    if (!layout) return;
     try {
-        const layout = JSON.parse(saved);
         const select = document.getElementById('market-select');
         const card = document.getElementById('lottery-card');
-        const bgLayers = document.getElementById('card-bg-layers');
         const bgBase = document.querySelector('.card-bg-base');
         const zoomInput = document.getElementById('bg-zoom-input');
-        const brightInput = document.getElementById('bg-brightness-input');
         
-        // Restore Market with validation
         if (layout.market && select) {
             const exists = Array.from(select.options).some(opt => opt.value === layout.market);
             if (exists) {
@@ -212,6 +233,8 @@ function loadLayout() {
 
         if (layout.isCustomBg && card) {
             card.classList.add('bg-custom');
+        } else if (card) {
+            card.classList.remove('bg-custom');
         }
 
         if (layout.background && bgBase) {
@@ -224,32 +247,57 @@ function loadLayout() {
             document.body.style.backgroundImage = layout.appBackground;
         }
 
-        for (const [id, data] of Object.entries(layout.items)) {
-            const item = document.getElementById(id);
-            if (item) {
-                if (data.transform) item.style.transform = data.transform;
-                const target = getEditableTarget(item);
-                if (target) {
-                    if (data.fontSize) target.style.fontSize = data.fontSize;
-                    if (data.fontFamily) target.style.fontFamily = data.fontFamily;
-                    if (data.fontWeight) target.style.fontWeight = data.fontWeight;
-                    if (data.color) target.style.color = data.color;
-                    if (data.html) {
-                        target.innerHTML = data.html;
-                    }
-                    if (target.classList.contains('syair-text')) {
-                        target.querySelectorAll('p').forEach(p => {
-                            p.style.fontSize = data.fontSize;
-                            p.style.fontFamily = data.fontFamily;
-                            p.style.fontWeight = data.fontWeight;
-                            p.style.color = data.color;
-                        });
+        if (layout.items) {
+            for (const [id, data] of Object.entries(layout.items)) {
+                const item = document.getElementById(id);
+                if (item) {
+                    if (data.transform) item.style.transform = data.transform;
+                    const target = getEditableTarget(item);
+                    if (target) {
+                        if (data.fontSize) target.style.fontSize = data.fontSize;
+                        if (data.fontFamily) target.style.fontFamily = data.fontFamily;
+                        if (data.fontWeight) target.style.fontWeight = data.fontWeight;
+                        if (data.color) target.style.color = data.color;
+                        if (data.html) {
+                            target.innerHTML = data.html;
+                        }
+                        if (target.classList.contains('syair-text')) {
+                            target.querySelectorAll('p').forEach(p => {
+                                p.style.fontSize = data.fontSize;
+                                p.style.fontFamily = data.fontFamily;
+                                p.style.fontWeight = data.fontWeight;
+                                p.style.color = data.color;
+                            });
+                        }
                     }
                 }
             }
         }
     } catch (e) {
-        console.error("Gagal memuat layout:", e);
+        console.error("Gagal apply layout:", e);
+    }
+}
+
+function loadLayout() {
+    // 1. Load dari LocalStorage & Default JS dulu biar cepat (tanpa loading berlama-lama)
+    let saved = localStorage.getItem('lottery_layout_v3_1');
+    if (!saved && typeof DEFAULT_LAYOUT !== 'undefined' && DEFAULT_LAYOUT !== null) {
+        saved = JSON.stringify(DEFAULT_LAYOUT);
+    }
+    if (saved) {
+        applyLayoutData(JSON.parse(saved));
+    }
+
+    // 2. Load Realtime dari Firebase (jika sudah di-set)
+    if (db) {
+        db.ref('layouts/default').once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                const firebaseLayout = snapshot.val();
+                applyLayoutData(firebaseLayout);
+                // Update local storage
+                localStorage.setItem('lottery_layout_v3_1', JSON.stringify(firebaseLayout));
+            }
+        }).catch(err => console.error("Firebase load error:", err));
     }
 }
 
@@ -274,6 +322,12 @@ function initEditor() {
         toggleEditBtn.classList.toggle('on', isEditMode);
         document.querySelectorAll('.editable').forEach(el => {
             el.contentEditable = isEditMode;
+            if (isEditMode) {
+                // Auto-save kalau selesai ketik (klik ke luar teks)
+                el.onblur = () => saveLayout();
+            } else {
+                el.onblur = null;
+            }
         });
         if (!isEditMode) {
             closeToolbar();
@@ -653,23 +707,5 @@ window.onload = () => {
     updateMarketLogo();
     loadLayout();
 
-    // Netlify Export Logic
-    const exportBtn = document.getElementById('export-netlify-btn');
-    if (exportBtn) {
-        exportBtn.onclick = () => {
-            const currentSaved = localStorage.getItem('lottery_layout_v3_1');
-            if (!currentSaved) {
-                alert('Belum ada editan yang tersimpan! Silahkan pilih pasaran atau ubah teks terlebih dahulu.');
-                return;
-            }
-            // Create a downloadable JS file containing the exact layout 
-            const jsContent = `// File TATA LETAK PERMANEN untuk Netlify\n// Jangan diedit secara manual\nconst DEFAULT_LAYOUT = ${currentSaved};`;
-            const blob = new Blob([jsContent], {type: 'application/javascript'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'default-layout.js';
-            link.click();
-            alert('File [default-layout.js] berhasil didownload!\n\nPENTING: Pindahkan/Copy file yang baru didownload ini ke dalam folder [SYAIR TOGEL] Anda (tiban file lama). Setelah itu, barulah Anda upload folder tersebut ke Netlify agar editan Anda menjadi permanen!');
-        };
-    }
+
 };
