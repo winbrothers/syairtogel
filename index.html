@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syair Togel & Number Generator - Premium Edition</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Cinzel+Decorative:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Eagle+Lake&family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Roboto:wght@400;700&family=Metamorphous&family=Montserrat:wght@400;700&family=Almendra+SC:wght@400;700&family=UnifrakturMaguntia&family=Berkshire+Swash&family=Rye&family=MedievalSharp&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Dashboard / Control Panel -->
+        <header class="header">
+            <h1>SYAIR TOGEL <span class="gold-text">PREMIUM</span></h1>
+            <p>Generate precise numbers and stunning lottery poetry cards with one click.</p>
+        </header>
+
+        <div class="main-content-layout">
+            <div class="controls">
+                <div class="control-row">
+                    <div class="select-group">
+                        <label for="market-select">PASARAN TOGEL:</label>
+                        <select id="market-select">
+                            <!-- Markets will be populated by JS -->
+                        </select>
+                    </div>
+                    <button id="generate-btn" class="btn-main">GENERATE SYAIR</button>
+                </div>
+                
+                <div class="edit-panel">
+                    <div class="edit-group">
+                        <label>PENGATURAN CARD:</label>
+                        <div class="btn-group">
+                            <button id="toggle-edit-mode" class="btn-tool active-toggle">EDIT TATA LETAK OFF</button>
+                            <button id="bg-upload-trigger" class="btn-tool">UPLOAD GAMBAR</button>
+                            <input type="file" id="bg-upload-input" accept="image/*" style="width:0.1px;height:0.1px;opacity:0;overflow:hidden;position:absolute;z-index:-1;">
+                            <button id="bg-reset-btn" class="btn-tool danger">RESET ALL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="edit-panel">
+                    <div class="edit-group">
+                        <label>PENGATURAN LAYAR:</label>
+                        <div class="btn-group">
+                            <button id="app-bg-upload-trigger" class="btn-tool">UPLOAD BG LAYAR</button>
+                            <input type="file" id="app-bg-upload-input" accept="image/*" style="width:0.1px;height:0.1px;opacity:0;overflow:hidden;position:absolute;z-index:-1;">
+                            <button id="app-bg-reset-btn" class="btn-tool danger">RESET BG LAYAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="edit-panel">
+                    <div class="edit-group">
+                        <label>PENGATURAN NETLIFY:</label>
+                        <div class="btn-group">
+                            <button id="export-netlify-btn" class="btn-tool warning-btn" style="background:#ff4400; color:white; font-weight:bold; width:100%;">🔥 EXPORT UNTUK NETLIFY</button>
+                            <p style="font-size:0.75rem; color:#aaa; text-align:center; padding-top:5px; margin:0;">
+                                Klik untuk mengunci editan saat ini agar permanen saat dipindahkan ke Netlify/Hosting.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Text Toolbar -->
+                <div id="text-toolbar" class="floating-toolbar" style="display: none;">
+                <div class="toolbar-grid">
+
+                    <div class="toolbar-section full">
+                        <label>BG Zoom (%)</label>
+                        <input type="range" id="bg-zoom-input" min="100" max="500" step="1" value="100">
+                    </div>
+                    <div class="toolbar-section full">
+                        <label>Scale</label>
+                        <input type="range" id="element-scale-input" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                    <div class="toolbar-section full">
+                        <label>Edit Tanggal</label>
+                        <input type="text" id="manual-date-input" placeholder="Contoh: 21 MARET 2026">
+                    </div>
+                    <div class="toolbar-section full">
+                        <label>Font</label>
+                        <select id="font-family-input">
+                            <option value="'Eagle Lake', cursive">Eagle Lake</option>
+                            <option value="'Cinzel', serif">Cinzel</option>
+                            <option value="'Cinzel Decorative', cursive">Cinzel Deco</option>
+                            <option value="'Metamorphous', cursive">Metamorphous</option>
+                            <option value="'Lora', serif">Lora</option>
+                            <option value="'Roboto', sans-serif">Roboto</option>
+                            <option value="'Montserrat', sans-serif">Montserrat</option>
+                            <option value="'Playfair Display', serif">Playfair Display</option>
+                            <option value="'Almendra SC', serif">Almendra SC</option>
+                            <option value="'UnifrakturMaguntia', cursive">Unifraktur</option>
+                            <option value="'Berkshire Swash', cursive">Berkshire Swash</option>
+                            <option value="'Rye', cursive">Rye</option>
+                            <option value="'MedievalSharp', cursive">MedievalSharp</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-section">
+                        <label>Style</label>
+                        <select id="font-weight-input">
+                            <option value="normal">Normal</option>
+                            <option value="bold">Bold</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-section">
+                        <label>Size</label>
+                        <input type="number" id="font-size-input" value="16" min="10" max="200">
+                    </div>
+                    <div class="toolbar-section full">
+                        <label>Color</label>
+                        <input type="color" id="text-color-input" value="#ffffff">
+                    </div>
+                </div>
+                    <button id="close-toolbar" class="btn-close">×</button>
+                </div>
+
+                <div class="control-row secondary">
+                    <button id="download-btn" class="btn-secondary">SIMPAN SBG GAMBAR</button>
+                </div>
+            </div>
+
+            <main class="card-display">
+            <!-- The Card itself -->
+            <div id="lottery-card" class="card-frame">
+                <!-- Background Decoration Layers -->
+                <div id="card-bg-layers" class="card-bg-layers">
+                    <div class="card-bg-base"></div>
+                    <div class="card-bg-overlay"></div>
+                    <div class="embers-canvas"></div>
+                </div>
+                
+                <!-- Alignment Guides -->
+                <div id="guide-v" class="guide v" style="display: none;"></div>
+                <div id="guide-h" class="guide h" style="display: none;"></div>
+                
+                <div class="card-content">
+                    <!-- Top Branding & Date -->
+                    <div class="branding draggable" id="item-branding">
+                        <img src="https://cdn.areabermain.club/assets/cdn/az8/2026/01/07/20260107/a04b8cf808cf2af0d199e4f55b005c5b/arena303-logo-fix-besar.png" class="brand-logo" alt="Arena303 Logo">
+                    </div>
+
+                    <div class="market-logo-wrapper draggable" id="item-market-logo">
+                        <img id="market-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Market Logo">
+                    </div>
+                    <div id="item-date" class="date-text editable draggable">
+                        <span id="current-date">21 MARET 2026</span>
+                    </div>
+
+                    <div class="main-stats" id="item-main-stats">
+                        <div class="stat-box" id="item-stats-group-main">
+                            <div id="item-label-main" class="stat-label draggable editable">ANGKA MAIN</div>
+                            <div id="angka-main" class="stat-value draggable editable">7-2-4-1-0</div>
+                        </div>
+                        <div class="stat-box" id="item-stats-group-bbfs">
+                            <div id="item-label-bbfs" class="stat-label draggable editable">B B F S</div>
+                            <div id="bbfs" class="stat-value draggable editable">135794</div>
+                        </div>
+                    </div>
+
+                    <div class="middle-row" id="item-middle-row">
+                        <div class="compass-container draggable" id="item-compass">
+                            <div class="compass-wrapper">
+                                <div id="compass-ne" class="pos ne editable">2</div>
+                                <div id="compass-se" class="pos se editable">9</div>
+                                <div id="compass-sw" class="pos sw editable">3</div>
+                                <div id="compass-nw" class="pos nw editable">7</div>
+                                <div class="compass-star-svg-wrapper">
+                                    <svg viewBox="0 0 100 100" class="compass-star-svg">
+                                        <!-- Top -->
+                                        <path d="M50 0 L50 50 L42 42 Z" class="star-side-shadow"></path>
+                                        <path d="M50 0 L58 42 L50 50 Z" class="star-side-light"></path>
+                                        <!-- Right -->
+                                        <path d="M100 50 L50 50 L58 42 Z" class="star-side-shadow"></path>
+                                        <path d="M100 50 L58 58 L50 50 Z" class="star-side-light"></path>
+                                        <!-- Bottom -->
+                                        <path d="M50 100 L50 50 L58 58 Z" class="star-side-shadow"></path>
+                                        <path d="M50 100 L42 58 L50 50 Z" class="star-side-light"></path>
+                                        <!-- Left -->
+                                        <path d="M0 50 L50 50 L42 58 Z" class="star-side-shadow"></path>
+                                        <path d="M0 50 L42 42 L50 50 Z" class="star-side-light"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shio-display draggable" id="item-shio-img">
+                            <div class="shio-circle">
+                                <img id="shio-img" src="https://sleekshot.app/v/HZhMYLUgIcS7" alt="Shio Image">
+                            </div>
+                        </div>
+                        <div id="item-shio-name" class="shio-label editable draggable">
+                            <div id="shio-name">SHIO MONYET</div>
+                        </div>
+
+                        <div class="colok-bebas-display" id="item-cb-group">
+                            <div id="item-label-cb" class="stat-label draggable editable">COLOK BEBAS</div>
+                            <div id="colok-bebas" class="stat-value highlight draggable editable">7 / 0</div>
+                        </div>
+                    </div>
+
+                    <div class="website-link draggable editable" id="item-link">ARENA39101.COM</div>
+
+
+
+                    <div class="syair-container draggable" id="item-syair">
+                        <div class="syair-text">
+                            <p id="syair-line-1" class="editable">LIMA LANGKAH MUNDUR PERLAHAN,</p>
+                            <p id="syair-line-2" class="editable">DUA LANGKAH MAJU TANPA BEBAN.</p>
+                            <p id="syair-line-3" class="editable">HITUNG JEJAK YANG TERTINGGAL DIAM,</p>
+                            <p id="syair-line-4" class="editable">DI SITULAH ANGKA MULAI TERPENDAM.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </main>
+        </div> <!-- end main-content-layout -->
+    </div> <!-- end app-container -->
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="default-layout.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
